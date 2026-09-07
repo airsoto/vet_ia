@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>Vet AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --bg: linear-gradient(145deg, #f8fbff 0%, #eef7f5 48%, #f8f3fb 100%);
+      --surface: rgba(255,255,255,.78); --surface-solid:#fff; --border:rgba(23,50,66,.12);
+      --text:#17252e; --muted:#6c7b84; --accent:#137c74; --accent-2:#35a99d;
+      --accent-soft:rgba(19,124,116,.10); --shadow:0 24px 70px rgba(48,73,86,.13);
+    }
+    body.dark {
+      --bg: radial-gradient(circle at 20% 12%, #18313d 0, transparent 34%), radial-gradient(circle at 82% 78%, #18283c 0, transparent 38%), linear-gradient(145deg,#081015,#101a24 55%,#090d14);
+      --surface:rgba(20,31,40,.82); --surface-solid:#142029; --border:rgba(210,232,240,.13);
+      --text:#f2f7f8; --muted:#9aabb3; --accent:#70d7cd; --accent-2:#4abeb4;
+      --accent-soft:rgba(112,215,205,.12); --shadow:0 30px 90px rgba(0,0,0,.34);
+    }
+    *{box-sizing:border-box} html{min-height:100%} body{margin:0;min-height:100vh;background:var(--bg);background-attachment:fixed;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;transition:background .25s,color .25s}
+    button,textarea,input{font:inherit} button{color:inherit}.app{width:min(1100px,calc(100% - 36px));min-height:100vh;margin:auto;display:flex;flex-direction:column}
+    .topbar{height:76px;display:flex;align-items:center;justify-content:flex-end}
+    .top-actions,.toolbar,.species-row,.query-options{display:flex;align-items:center;gap:8px}.icon-button,.ghost-button,.species-button,.specialty-button,.send-button{border:1px solid var(--border);cursor:pointer;transition:.18s ease}.icon-button{width:39px;height:39px;border-radius:12px;background:var(--surface);display:grid;place-items:center}.icon-button:hover,.ghost-button:hover{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 35%,transparent)}.icon-button svg{width:19px;height:19px}
+    .hero{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:42px 0 88px}.hero.compact{justify-content:flex-start;padding-top:45px}.hero h1{font-size:clamp(38px,6vw,68px);line-height:1.02;letter-spacing:-3px;text-align:center;margin:0 0 34px;font-weight:760}.hero.compact h1{font-size:clamp(30px,4vw,44px);margin-bottom:24px;letter-spacing:-2px}
+    .query-wrap{width:min(790px,100%)}.composer{background:var(--surface);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:24px;padding:11px 11px 10px 18px;box-shadow:var(--shadow)}.input-row{display:flex;align-items:flex-end;gap:10px}textarea{flex:1;min-height:54px;max-height:180px;resize:none;background:transparent;border:0;outline:0;color:var(--text);padding:14px 4px;font-size:17px;line-height:1.45}textarea::placeholder{color:var(--muted)}
+    .send-button{width:47px;height:47px;flex:none;border:0;border-radius:15px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px rgba(19,124,116,.24)}.send-button:hover{transform:translateY(-1px)}.send-button:disabled{opacity:.55;cursor:not-allowed;transform:none}.send-button svg{width:21px}
+    .query-options{border-top:1px solid var(--border);padding:9px 2px 0;justify-content:space-between;flex-wrap:wrap}.species-row{gap:3px}.species-button,.ghost-button{background:transparent;border-color:transparent;border-radius:10px;padding:6px 10px;color:var(--muted);font-size:13px}.species-button{display:inline-flex;align-items:center;gap:6px}.species-button img{width:25px;height:25px;object-fit:contain;filter:grayscale(1);opacity:.82}.species-pair{display:inline-flex;align-items:center;gap:0}.species-pair img{width:21px;height:21px;margin-right:-3px}.species-button.active img{opacity:1}.species-button.active,.ghost-button.active{background:var(--accent-soft);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 22%,transparent)}.species-button:hover{color:var(--text)}body.dark .species-button img{filter:grayscale(1) invert(1)}.right-options{display:flex;align-items:center;gap:5px}.expand-option{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px}.expand-option input{accent-color:var(--accent)}
+    .specialties{display:none;margin-top:12px;background:var(--surface);backdrop-filter:blur(18px);border:1px solid var(--border);border-radius:20px;padding:16px;box-shadow:0 15px 42px rgba(31,54,65,.10)}.specialties.open{display:block;animation:appear .18s ease}.specialty-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.specialty-title{font-weight:700;font-size:14px}.clear{border:0;background:transparent;color:var(--muted);font-size:12px;cursor:pointer}.specialty-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}.specialty-button{aspect-ratio:1;border-radius:14px;background:transparent;padding:7px;display:grid;place-items:center}.specialty-button:hover{background:var(--accent-soft);transform:translateY(-1px)}.specialty-button.active{background:var(--accent-soft);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}.specialty-button img{width:62%;height:62%;min-width:48px;min-height:48px;max-width:66px;max-height:66px;object-fit:contain;opacity:1}.selected-specialties{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.chip{font-size:11px;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:5px 8px}
+    .status{min-height:22px;text-align:center;color:var(--muted);font-size:13px;margin-top:13px}.thinking{display:none;align-items:center;justify-content:center;gap:10px;margin-top:18px;color:var(--muted);font-size:13px}.thinking.show{display:flex}.thinking-orbit{width:23px;height:23px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--accent);border-right-color:var(--accent);animation:spin .8s linear infinite}.thinking-dots{display:flex;gap:4px}.thinking-dots i{display:block;width:5px;height:5px;border-radius:99px;background:var(--accent);animation:pulse 1.1s ease-in-out infinite}.thinking-dots i:nth-child(2){animation-delay:.15s}.thinking-dots i:nth-child(3){animation-delay:.3s}.suggestions{margin-top:14px}.suggestions-head{display:flex;align-items:center;justify-content:space-between;margin:0 4px 9px}.suggestions-title{color:var(--muted);font-size:12px}.suggestions-more{border:0;background:transparent;color:var(--accent);font-size:12px;cursor:pointer;padding:5px}.suggestion-list{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.suggestion{padding:13px 14px;border:1px solid var(--border);border-radius:15px;background:var(--surface);box-shadow:0 7px 20px rgba(28,50,62,.08);font-size:12.5px;line-height:1.4;color:var(--text);cursor:pointer;text-align:left;transition:.17s ease}.suggestion:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 32%,transparent);box-shadow:0 12px 28px rgba(28,50,62,.13)}.suggestions.hidden{display:none}.results{display:none;width:100%;margin-top:28px}.results.show{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;animation:appear .25s ease}.card{background:var(--surface);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:22px;box-shadow:0 15px 45px rgba(28,50,62,.08)}.answer-card{padding:25px}.answer-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:20px}.answer-title,.sources-title{font-weight:720}.toolbar{flex-wrap:wrap;justify-content:flex-end}.toolbar .ghost-button{border-color:var(--border);background:var(--surface-solid)}.response{font-size:15.5px;line-height:1.68}.response h2{font-size:21px;margin:26px 0 9px}.response h3{font-size:17px;margin:22px 0 8px}.response p{margin:10px 0}.response li{margin-bottom:7px}.side{display:flex;flex-direction:column;gap:16px}.sources-card{padding:20px}.sources-title{margin-bottom:13px}.empty-sources{font-size:13px;line-height:1.5;color:var(--muted)}.reference-item{font-size:13px;line-height:1.45;padding:10px 0;border-bottom:1px solid var(--border)}.reference-item:last-child{border:0}.evidence-panel{display:none;border-top:1px solid var(--border);margin-top:23px;padding-top:18px}.evidence-panel.open{display:block}.evidence-item{margin-bottom:10px;background:var(--accent-soft);border-radius:14px;padding:14px}.evidence-source{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px}.evidence-title{font-size:13px;font-weight:650;margin-bottom:5px}.evidence-text{font-size:12.5px;line-height:1.55;color:var(--muted);white-space:pre-wrap}
+    footer{text-align:center;color:var(--muted);font-size:11px;padding:16px 0 22px}.history-overlay{position:fixed;inset:0;background:rgba(2,8,12,.42);opacity:0;pointer-events:none;transition:.2s;z-index:10}.history-overlay.open{opacity:1;pointer-events:auto}.history-panel{position:fixed;left:0;top:0;width:min(360px,90vw);height:100vh;z-index:11;background:var(--surface-solid);border-right:1px solid var(--border);padding:22px;transform:translateX(-102%);transition:.23s;overflow:auto}.history-panel.open{transform:none}.history-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px}.history-title{font-size:20px;font-weight:730}.history-subtitle,.history-empty{font-size:12px;color:var(--muted);margin-top:3px}.history-item{padding:13px;border-radius:13px;cursor:pointer;margin-bottom:5px}.history-item:hover{background:var(--accent-soft)}.history-question{font-size:13px;font-weight:650;line-height:1.4}.history-meta{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.35}.history-close{border:0;background:transparent;font-size:25px;color:var(--muted);cursor:pointer}.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:#18252c;color:#fff;padding:10px 15px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:20}.toast.show{opacity:1;transform:translate(-50%,0)}
+    @keyframes appear{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(-4px);opacity:1}}
+    @media(max-width:800px){.app{width:min(100% - 24px,700px)}.topbar{height:64px}.hero{padding:28px 0 55px}.hero h1{letter-spacing:-2px}.suggestion-list{grid-template-columns:1fr}.results.show{grid-template-columns:1fr}.side{order:-1}.specialty-grid{grid-template-columns:repeat(5,1fr)}.answer-head{align-items:flex-start;flex-direction:column}.toolbar{justify-content:flex-start}.query-options{align-items:flex-start}.right-options{flex-wrap:wrap;justify-content:flex-end}}
+    @media(max-width:500px){.hero h1{font-size:38px}.composer{border-radius:20px;padding-left:13px}.specialty-grid{grid-template-columns:repeat(4,1fr)}.species-button{padding:7px;font-size:12px}.expand-option span{display:none}.answer-card{padding:19px}.ghost-button{padding:7px 8px}}
+  </style>
+</head>
+<body>
+  <div id="historyOverlay" class="history-overlay" onclick="toggleHistory(false)"></div>
+  <aside id="historyPanel" class="history-panel" aria-label="Historial de consultas">
+    <div class="history-head"><div><div class="history-title">Historial</div><div class="history-subtitle">Consultas recientes</div></div><button class="history-close" onclick="toggleHistory(false)" aria-label="Cerrar">×</button></div>
+    <div id="historyList"></div>
+  </aside>
+  <div class="app">
+    <header class="topbar">
+      <div class="top-actions">
+        <button class="icon-button" onclick="toggleHistory(true)" title="Historial" aria-label="Abrir historial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 7v5l3 2"/></svg></button>
+        <button id="themeButton" class="icon-button" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 15.5A8 8 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/></svg></button>
+      </div>
+    </header>
+    <main id="hero" class="hero">
+      <h1>Haz tu pregunta a Vet AI</h1>
+      <section class="query-wrap" aria-label="Consulta veterinaria">
+        <div class="composer">
+          <div class="input-row"><textarea id="question" rows="1" placeholder="Escribe tu consulta clínica…" aria-label="Pregunta"></textarea><button id="askButton" class="send-button" onclick="askVetAI()" aria-label="Enviar pregunta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 14-7-4 14-3-6-7-1Z"/><path d="m12 13 7-8"/></svg></button></div>
+          <div class="query-options">
+            <div class="species-row" aria-label="Especie">
+              <button class="species-button active" data-species="both"><span class="species-pair"><img src="icons/species/dog.png" alt=""><img src="icons/species/cat.png" alt=""></span>Ambos</button><button class="species-button" data-species="dog"><img src="icons/species/dog.png" alt="">Perro</button><button class="species-button" data-species="cat"><img src="icons/species/cat.png" alt="">Gato</button>
+            </div>
+            <div class="right-options"><label class="expand-option"><input id="expandSearch" type="checkbox"><span>Búsqueda ampliada</span></label><button id="specialtiesToggle" class="ghost-button" onclick="toggleSpecialties()">Especialidades</button></div>
+          </div>
+        </div>
+        <div id="specialtiesPanel" class="specialties">
+          <div class="specialty-head"><div class="specialty-title">Especialidades <span style="color:var(--muted);font-weight:400">· opcional</span></div><button class="clear" onclick="clearSpecialties()">Limpiar</button></div>
+          <div id="specialtyGrid" class="specialty-grid"></div><div id="selectedSpecialties" class="selected-specialties"></div>
+        </div>
+        <div id="suggestions" class="suggestions"><div class="suggestions-head"><span class="suggestions-title">Consultas de ejemplo</span><button class="suggestions-more" onclick="showMoreSuggestions()">Mostrar más →</button></div><div id="suggestionList" class="suggestion-list"></div></div>
+        <div id="thinking" class="thinking" role="status" aria-live="polite"><span class="thinking-orbit"></span><span>Vet AI está revisando la bibliografía</span><span class="thinking-dots"><i></i><i></i><i></i></span></div><div id="status" class="status" role="status" aria-live="polite"></div>
+      </section>
+      <section id="results" class="results">
+        <article class="card answer-card"><div class="answer-head"><div class="answer-title">Respuesta</div><div class="toolbar"><button class="ghost-button" onclick="copyAnswer()">Copiar</button><button class="ghost-button" onclick="toggleEvidence()">Ver evidencia</button><button class="ghost-button" onclick="exportAnswer()">Exportar</button><button class="ghost-button" onclick="newQuestion()">Nueva consulta</button></div></div><div id="response" class="response"></div><div id="evidencePanel" class="evidence-panel"></div></article>
+        <div class="side"><aside class="card sources-card"><div class="sources-title">Referencias</div><div id="emptySources" class="empty-sources">Las fuentes utilizadas aparecerán aquí.</div><div id="references"></div></aside></div>
+      </section>
+    </main>
+    <footer>Desarrollado por Ángel Soto · airsoto@googlemail.com</footer>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script>
+    const specialties = [
+      ["Alteraciones laboratoriales","alteracioneslaboratoriales.png"],["Cardiorrespiratorio","cardiologia.png"],["Dermatología","dermatologia.png"],["Diagnóstico general","dxgeneralk.png"],["Ecocardiografía","ecocardiografia.png"],["Ecografía abdominal","ecografiaabdominal.png"],["Electrocardiografía","electrocardiografia.png"],["Endocrino","endocrino.png"],["Gastrointestinal","gastrointestinal.png"],["Síntomas generales","generales.png"],["Hematología","hematologia.png"],["Enfermedades infecciosas","infecciosas.png"],["Nefrología","nefrologia.png"],["Neurología","neurologia.png"],["Oftalmología","oftalmologia.png"],["Oncología","oncologia.png"],["Radiografía torácica","radiografiatoracica.png"],["Teriogenología","teriogenologia.png"],["Traumatología","traumatologia.png"]
+    ];
+    const exampleQuestions=[
+      "¿Cuáles son los diagnósticos diferenciales de una poliuria y polidipsia en el perro?",
+      "Describe el abordaje diagnóstico de un gato con pérdida de peso y vómitos crónicos.",
+      "¿Cuáles son las causas de anemia regenerativa en un perro?",
+      "Diagnósticos diferenciales de tos crónica en un perro adulto.",
+      "Describe la enfermedad renal crónica felina: diagnóstico, estadificación y manejo.",
+      "¿Cómo abordar una elevación persistente de ALT y ALP en un perro?",
+      "Diagnósticos diferenciales de ictericia en el gato.",
+      "Describe la insuficiencia cardiaca congestiva: signos, diagnóstico y tratamiento inicial.",
+      "¿Qué causas pueden explicar convulsiones de inicio reciente en un perro mayor?",
+      "Diagnósticos diferenciales de diarrea crónica en el perro.",
+      "Describe el hipertiroidismo felino y su abordaje clínico.",
+      "¿Cómo interpretar y abordar una hipercalcemia en el perro?",
+      "Diagnósticos diferenciales de prurito generalizado en el perro.",
+      "Describe la pancreatitis canina: diagnóstico, tratamiento y pronóstico.",
+      "¿Qué causas deben considerarse ante disnea aguda en el gato?",
+      "Diagnósticos diferenciales de cojera aguda en un perro joven.",
+      "Describe la diabetes mellitus felina y el seguimiento recomendado.",
+      "¿Cómo abordar una masa esplénica hallada por ecografía en un perro?",
+      "Diagnósticos diferenciales de hematuria en el perro.",
+      "Describe el síndrome de Cushing canino: pruebas diagnósticas y tratamiento."
+    ];
+    let selectedSpecies="both", selectedSpecialties=[], lastAnswer="", lastReferences=[], lastEvidence=[], suggestionPage=0;
+    const $=id=>document.getElementById(id);
+    function escapeHTML(value){const d=document.createElement("div");d.textContent=String(value??"");return d.innerHTML}
+    function safeJSON(key,fallback=[]){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback))}catch{return fallback}}
+    function buildSpecialties(){const grid=$("specialtyGrid");specialties.forEach(([name,file])=>{const b=document.createElement("button");b.type="button";b.className="specialty-button";b.dataset.specialty=name;b.title=name;b.setAttribute("aria-label",name);b.innerHTML=`<img src="icons/${file}" alt="" onerror="this.style.display='none';this.parentNode.textContent='${escapeHTML(name.slice(0,2))}'">`;b.onclick=()=>selectSpecialty(b);grid.appendChild(b)})}
+    function selectSpecialty(button){const name=button.dataset.specialty;selectedSpecialties=selectedSpecialties.includes(name)?selectedSpecialties.filter(x=>x!==name):[...selectedSpecialties,name];localStorage.setItem("vetai-specialties",JSON.stringify(selectedSpecialties));syncSpecialties()}
+    function syncSpecialties(){document.querySelectorAll(".specialty-button").forEach(b=>b.classList.toggle("active",selectedSpecialties.includes(b.dataset.specialty)));$("selectedSpecialties").innerHTML=selectedSpecialties.map(x=>`<span class="chip">${escapeHTML(x)}</span>`).join("");$("specialtiesToggle").classList.toggle("active",selectedSpecialties.length>0);$("specialtiesToggle").textContent=selectedSpecialties.length?`Especialidades · ${selectedSpecialties.length}`:"Especialidades"}
+    function clearSpecialties(){selectedSpecialties=[];localStorage.removeItem("vetai-specialties");syncSpecialties()}
+    function toggleSpecialties(force){const open=typeof force==="boolean"?force:!$("specialtiesPanel").classList.contains("open");$("specialtiesPanel").classList.toggle("open",open);$("specialtiesToggle").setAttribute("aria-expanded",String(open))}
+    document.querySelectorAll(".species-button").forEach(b=>b.onclick=()=>{selectedSpecies=b.dataset.species;localStorage.setItem("vetai-species",selectedSpecies);syncSpecies()});
+    function syncSpecies(){document.querySelectorAll(".species-button").forEach(b=>b.classList.toggle("active",b.dataset.species===selectedSpecies))}
+    function restorePreferences(){selectedSpecies=localStorage.getItem("vetai-species")||"both";selectedSpecialties=safeJSON("vetai-specialties",[]);syncSpecies();syncSpecialties()}
+    function toggleTheme(){document.body.classList.toggle("dark");localStorage.setItem("vetai-theme",document.body.classList.contains("dark")?"dark":"light")}
+    function restoreTheme(){const saved=localStorage.getItem("vetai-theme");if(saved==="dark"||(!saved&&matchMedia("(prefers-color-scheme: dark)").matches))document.body.classList.add("dark")}
+    function setLoading(active){$("askButton").disabled=active;$("question").disabled=active;$("thinking").classList.toggle("show",active);if(active)$("status").textContent=""}
+    async function askVetAI(){const question=$("question").value.trim();if(!question){$("question").focus();return}let finalQuestion=question;if(selectedSpecies==="dog")finalQuestion+="\n\nEspecie seleccionada: perro.";if(selectedSpecies==="cat")finalQuestion+="\n\nEspecie seleccionada: gato.";if(selectedSpecialties.length)finalQuestion+=`\n\nEspecialidades seleccionadas: ${selectedSpecialties.join(", ")}.`;if($("expandSearch").checked)finalQuestion+="\n\nProporciona una respuesta más amplia y realiza una búsqueda bibliográfica más exhaustiva.";setLoading(true);let failed=false;try{const response=await fetch("http://127.0.0.1:8000/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:finalQuestion})});if(!response.ok){let message=`Error ${response.status}`;try{const e=await response.json();message=typeof e.detail==="string"?e.detail:(e.message||message)}catch{}throw new Error(message)}const data=await response.json();lastAnswer=data.answer||"";lastReferences=data.references||[];lastEvidence=data.evidence||[];renderResult();saveHistoryItem(question);$("hero").classList.add("compact")}catch(error){failed=true;$("status").textContent=`No se pudo completar la consulta: ${error.message}`}finally{$("askButton").disabled=false;$("question").disabled=false;$("thinking").classList.remove("show");if(!failed)$("status").textContent=""}}
+    function renderResult(){if(window.marked)$("response").innerHTML=marked.parse(lastAnswer);else $("response").textContent=lastAnswer;renderReferences();$("evidencePanel").classList.remove("open");$("results").classList.add("show")}
+    function renderReferences(){const box=$("references");box.innerHTML="";$("emptySources").style.display=lastReferences.length?"none":"block";lastReferences.forEach((ref,i)=>{const el=document.createElement("div");el.className="reference-item";el.textContent=`${i+1}. ${ref}`;box.appendChild(el)})}
+    function toggleEvidence(){const panel=$("evidencePanel");if(panel.classList.contains("open")){panel.classList.remove("open");return}panel.innerHTML=lastEvidence.length?lastEvidence.map((item,i)=>`<div class="evidence-item"><div class="evidence-source">Fuente ${i+1}${item.page!=null?` · página ${escapeHTML(item.page)}`:""}</div><div class="evidence-title">${escapeHTML(item.book||item.source||"")}</div><div class="evidence-text">${escapeHTML(item.text||item.content||"")}</div></div>`).join(""):'<div class="evidence-text">No hay evidencia disponible.</div>';panel.classList.add("open")}
+    async function copyAnswer(){if(!lastAnswer)return;try{await navigator.clipboard.writeText(lastAnswer);toast("Respuesta copiada")}catch{toast("No se pudo copiar")}}
+    function exportAnswer(){if(!lastAnswer)return;const refs=lastReferences.length?`\n\nREFERENCIAS\n${lastReferences.map((r,i)=>`${i+1}. ${r}`).join("\n")}`:"";const blob=new Blob([`${lastAnswer}${refs}`],{type:"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`vet-ai-${new Date().toISOString().slice(0,10)}.txt`;a.click();URL.revokeObjectURL(a.href)}
+    function newQuestion(){$("question").value="";lastAnswer="";lastReferences=[];lastEvidence=[];$("results").classList.remove("show");$("evidencePanel").classList.remove("open");$("status").textContent="";$("suggestions").classList.remove("hidden");$("hero").classList.remove("compact");$("question").focus()}
+    function saveHistoryItem(question){const history=safeJSON("vetai-history",[]);history.unshift({id:Date.now(),question,answer:lastAnswer,references:lastReferences,evidence:lastEvidence,species:selectedSpecies,specialties:[...selectedSpecialties],date:new Date().toISOString()});localStorage.setItem("vetai-history",JSON.stringify(history.slice(0,50)));renderHistory()}
+    function renderHistory(){const history=safeJSON("vetai-history",[]),box=$("historyList");if(!history.length){box.innerHTML='<div class="history-empty">Todavía no hay consultas guardadas.</div>';return}box.innerHTML="";history.forEach(item=>{const el=document.createElement("div");el.className="history-item";el.innerHTML=`<div class="history-question">${escapeHTML(item.question)}</div><div class="history-meta">${speciesLabel(item.species)}${item.specialties?.length?` · ${escapeHTML(item.specialties.join(", "))}`:""} · ${new Date(item.date).toLocaleDateString("es-ES")}</div>`;el.onclick=()=>loadHistoryItem(item);box.appendChild(el)})}
+    function loadHistoryItem(item){$("question").value=item.question||"";selectedSpecies=item.species||"both";selectedSpecialties=item.specialties||[];lastAnswer=item.answer||"";lastReferences=item.references||[];lastEvidence=item.evidence||[];syncSpecies();syncSpecialties();renderResult();$("hero").classList.add("compact");toggleHistory(false)}
+    function speciesLabel(s){return s==="dog"?"Perro":s==="cat"?"Gato":"Perro + gato"}
+    function toggleHistory(open){$("historyPanel").classList.toggle("open",open);$("historyOverlay").classList.toggle("open",open)}
+    function toast(text){$("toast").textContent=text;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
+    function renderSuggestions(){const start=suggestionPage*3;const questions=exampleQuestions.slice(start,start+3);$("suggestionList").innerHTML=questions.map(question=>`<button class="suggestion" type="button">${escapeHTML(question)}</button>`).join("");document.querySelectorAll(".suggestion").forEach((button,index)=>button.onclick=()=>{q.value=questions[index];q.dispatchEvent(new Event("input"));q.focus()});$("suggestions").querySelector(".suggestions-more").textContent=start+3>=exampleQuestions.length?"Volver al inicio →":"Mostrar más →"}
+    function showMoreSuggestions(){suggestionPage=suggestionPage>=Math.ceil(exampleQuestions.length/3)-1?0:suggestionPage+1;renderSuggestions()}
+    const q=$("question");q.addEventListener("input",()=>{q.style.height="auto";q.style.height=Math.min(q.scrollHeight,180)+"px";$("suggestions").classList.toggle("hidden",q.value.trim().length>0)});q.addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();askVetAI()}});
+    restoreTheme();buildSpecialties();restorePreferences();renderHistory();renderSuggestions();
+  </script>
+</body>
+</html>
