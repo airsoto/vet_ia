@@ -1,4 +1,4 @@
-# Vet AI
+# Vet BOT
 
 Interfaz web de Vet AI.
 
